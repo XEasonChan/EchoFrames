@@ -1,250 +1,180 @@
 <p align="center">
-  <img width="100px" height="100px" src="https://www.rrweb.io/favicon.png">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./assets/wordmark-dark.svg" />
+    <img src="./assets/wordmark.svg" alt="EchoFrames" width="380" />
+  </picture>
 </p>
+
 <p align="center">
-  <a href="https://www.rrweb.io/" style="font-weight: bold">Try rrweb</a>
+  <em>Record any web product flow. Get a frame-perfect Remotion video.<br />
+  Agent-first — drive it with Claude Code, not a timeline UI.</em>
 </p>
 
-# rrweb
+<p align="center">
+  <video src="./assets/launch-demo.mp4" controls autoplay loop muted playsinline width="720">
+    Your browser does not support embedded video. <a href="./assets/launch-demo.mp4">Download (3.4 MB MP4)</a>.
+  </video>
+</p>
 
-**[The rrweb documentary (in Chinese, with English subtitles)](https://www.bilibili.com/video/BV1wL4y1B7wN?share_source=copy_web)**
+<p align="center">
+  <sub>↑ The 44-second <a href="https://memdex.ai">Memdex</a> launch video — built end-to-end with this pipeline. 6 beats, ChatGPT / Claude / Gemini cross-platform demo. Every frame is the real DOM, not a pixel screen recording.</sub>
+</p>
 
-[![Join the chat at slack](https://img.shields.io/badge/slack-@rrweb-teal.svg?logo=slack)](https://join.slack.com/t/rrweb/shared_invite/zt-siwoc6hx-uWay3s2wyG8t5GpZVb8rWg)
-[![Twitter Follow](https://img.shields.io/badge/twitter-@rrweb__io-teal.svg?logo=twitter)](https://twitter.com/rrweb_io)
-[![Reddit](https://img.shields.io/badge/reddit-r/rrweb-teal.svg?logo=reddit)](https://www.reddit.com/r/rrweb)
-![recorder gzip size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/@rrweb/record@latest/umd/record.min.js?compression=gzip&label=recorder%20gzip%20size&max=200000&softmax=100000)
-![replayer gzip size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/@rrweb/replay@latest/umd/replay.min.js?compression=gzip&label=replayer%20gzip%20size&max=200000&softmax=100000)
-[![](https://data.jsdelivr.com/v1/package/npm/rrweb/badge)](https://www.jsdelivr.com/package/npm/rrweb)
+<p align="center">
+  <a href="./ECHOFRAMES_V0_PLAN.md">v0 plan</a> ·
+  <a href="https://memdex.ai">case study</a> ·
+  <a href="#quickstart">quickstart</a> ·
+  <a href="./README.zh_CN.md">中文</a>
+</p>
 
-[中文文档](./README.zh_CN.md)
+---
 
-> I have joined Github Sponsors and highly appreciate your sponsorship.
+## The problem
 
-rrweb refers to 'record and replay the web', which is a tool for recording and replaying users' interactions on the web.
+Everyone's making launch videos in Remotion now. Fidelity still sucks.
 
-## Guide
+- **Screen recording** (Loom · Tella · ScreenStudio · QuickTime) is easy but the output is a flat pixel video. You can't re-render at 4K, can't edit a button color, can't re-cut without re-recording. When the product UI changes, every video starts over.
+- **Authoring in Remotion** gives you full control, but you're rebuilding your real product UI in React from scratch for every shot. Hours per beat — even with an LLM driving.
+- **rrweb session players** (PostHog · Highlight) replay captured DOM inside an iframe for human review. They aren't deterministic frame renderers — forward play and seek give different DOM ([rrweb#1816](https://github.com/rrweb-io/rrweb/issues/1816)).
 
-[**📚 Read the rrweb guide here. 📚**](./guide.md)
+The missing primitive: **record the real DOM, then deterministically render it as Remotion video.** That's EchoFrames.
 
-[**🍳 Recipes 🍳**](./docs/recipes/index.md)
+## What EchoFrames is
 
-[**📺 Presentation:** Hacking the browser to digital twin your users 📺](https://youtu.be/cWxpp9HwLYw)
+Three pieces:
 
-## Project Structure
+1. **`echoframes-capture`** — Browser extension (Chrome / Firefox). Click record, use your product, click stop. Captures DOM mutations + CSS + fonts + images to `~/echoframes/captures/{host}__{YYYY-MM-DD-HHmm}.json`. No upload, no SaaS — the file lands on your disk.
+2. **`echoframes`** — npm SDK. A pure `seekToFrame(events, frameIndex, fps)` function on top of rrdom + a React component `<EchoFrame events={…} />` for Remotion. Forward play and frame seek produce **identical** DOM at every frame, at any output resolution.
+3. **`/echoframes`** — Claude Code skill. Tells your agent: *"scan my captures, wire that Notion flow into Beat 4 of the launch video with a 'see how it works' caption, render it."* The agent does it conversationally. No timeline UI to click.
 
-rrweb is mainly composed of 3 parts:
+## Why agent-first matters
 
-- **[rrweb-snapshot](https://github.com/rrweb-io/rrweb/tree/master/packages/rrweb-snapshot/)**, including both snapshot and rebuilding features. The snapshot is used to convert the DOM and its state into a serializable data structure with a unique identifier; the rebuilding feature is to rebuild the snapshot into corresponding DOM.
-- **[rrweb](https://github.com/rrweb-io/rrweb)**, including two functions, record and replay. The record function is used to record all the mutations in the DOM; the replay is to replay the recorded mutations one by one according to the corresponding timestamp.
-- **[rrweb-player](https://github.com/rrweb-io/rrweb/tree/master/packages/rrweb-player/)**, is a player UI for rrweb, providing GUI-based functions like pause, fast-forward, drag and drop to play at any time.
+Existing launch-video tools assume a human is clicking through a timeline. EchoFrames assumes an AI agent is reading and writing the source — which unlocks workflows that no GUI can match:
+
+### 1. Marketing variant generation at scale
+
+> *"Render the same flow with 10 captions × 3 VO voices × 2 aspect ratios."*
+
+Marketing doesn't need one perfect video. They need 60 cheap variants to find which use case lands hardest. With EchoFrames, that's a loop in a YAML manifest, not 60 sessions in After Effects.
+
+### 2. Agent self-review on every PR
+
+> *Your code agent ships a new landing page → records itself walking the page → narrates the design decisions in voiceover → posts the MP4 to the pull request.*
+
+Your code reviewer used to read a diff. Now they watch a 30-second narrated demo. Same effort cost from the agent.
+
+### 3. Re-renderable forever
+
+Product UI evolves. With EchoFrames captures, every launch video re-renders deterministically against the new UI. Update once, every demo refreshes.
+
+## Status
+
+**Pre-v0.** Targeting public release in ~7 weeks. Scope + GTM tracked at [`ECHOFRAMES_V0_PLAN.md`](./ECHOFRAMES_V0_PLAN.md).
+
+The pipeline is already validated end-to-end: the [**Memdex launch video**](https://memdex.ai) — 44 seconds, 6 beats, cross-platform AI memory demo (ChatGPT / Claude / Gemini) — was built with an earlier internal version of this stack. See `apps/launch-video/` in the [Memdex repo](https://github.com/XEasonChan/memdex) for the production reference.
+
+## Quickstart
+
+> ⚠️ Pre-v0 preview. Commands below are the target shape — not all are wired yet. Track readiness in `ECHOFRAMES_V0_PLAN.md` §7.
+
+```bash
+# 1. Install the capture extension
+git clone https://github.com/XEasonChan/echoframes
+cd echoframes/packages/echoframes-capture
+yarn install && yarn pack:chrome
+# Load dist/chrome/ as an unpacked extension at chrome://extensions
+
+# 2. Record a flow
+# Click the extension popup → record → use the site → stop
+# → file saves to ~/echoframes/captures/{host}__{date}.json
+
+# 3. Wire it into a Remotion project, conversationally
+cd ~/my-launch-video
+claude
+
+> /echoframes wire my latest notion capture into a 12-second beat
+> with a "Notion AI in 30 seconds" caption, then render to MP4
+```
+
+The agent will:
+1. Scan `~/echoframes/captures/` and confirm the file
+2. Inspect duration / event count / asset sizes
+3. Ask render parameters (fps, scale, redactions) via a single batched checkpoint
+4. Run `npx echoframes bundle` to inline fonts and images
+5. Write the React component into your Remotion project's `src/beats/`
+6. Update `Composition.tsx` and `Root.tsx` with the new sequence
+7. Render to MP4
+
+Manual usage (no Claude Code) is in [`docs/manual.md`](./docs/manual.md) (TODO v0).
+
+## v0 starter templates
+
+Each ships as a standalone Remotion project, slot-fillable with one or more captures.
+
+| Template | Use case | Length |
+|---|---|---|
+| `launch-hero` | 30-second product launch with VO + captions (Memdex pattern) | ~30s |
+| `feature-walkthrough` | Single product feature, focused beats with cursor highlights | 15-45s |
+| `before-after` | Side-by-side, before-state vs after-state of a UI change | ~20s |
+| `3-up-comparison` | Three competitors / three states / three personas, at once | ~25s |
+| `testimonial-card` | Captured product UI under a quote overlay | ~10s |
+
+Community templates ship in [`echoframes-recipes`](https://github.com/XEasonChan/echoframes-recipes) (separate repo, accepts PRs).
+
+## How EchoFrames is different
+
+|   | Screen recording | rrweb session replay | Remotion (alone) | **EchoFrames** |
+|---|:---:|:---:|:---:|:---:|
+| Records real product UI | ✅ | ✅ | ❌ | ✅ |
+| Vector-quality output (any resolution) | ❌ | ❌ | ✅ | ✅ |
+| Deterministic frame seek = forward play | ❌ | ❌ | ✅ | ✅ |
+| Re-renders when product UI changes | ❌ | ❌ | ❌ | ✅ |
+| Source is editable code, not a binary | ❌ | ❌ | ✅ | ✅ |
+| Agent-driven authoring | ❌ | ❌ | partial | ✅ |
+| Bulk-generate variants | ❌ | ❌ | partial | ✅ |
+
+## Built on
+
+Standing on giants — none of these primitives are ours:
+
+- [**rrweb**](https://github.com/rrweb-io/rrweb) (MIT) — DOM event recording + snapshot primitives. The browser extension is a fork of `rrweb-io/rrweb` `packages/web-extension`.
+- [**rrdom**](https://github.com/rrweb-io/rrweb/tree/master/packages/rrdom) (MIT) — Virtual DOM tree, the substrate that makes deterministic seeking possible.
+- [**Remotion**](https://remotion.dev/) — React → MP4 rendering pipeline.
+- [**posthog-react-rrweb-player**](https://github.com/PostHog/posthog-react-rrweb-player) (MIT) — reference for embedding rrweb in React.
+
+What EchoFrames adds:
+
+- A pure synchronous `seekToFrame(events, frameIndex, fps)` (rrweb's `Replayer.pause(t)` is non-deterministic per [rrweb#1816](https://github.com/rrweb-io/rrweb/issues/1816)).
+- The `<EchoFrame>` Remotion bridge component.
+- An offline asset bundler (fonts + images + CORS workaround).
+- The 5 v0 starter templates.
+- The Claude Code skill.
 
 ## Roadmap
 
-- storage engine: do deduplication on a large number of rrweb sessions
-- compact mutation data in common patterns
-- provide plugins via the new plugin API, including:
-  - XHR plugin
-  - fetch plugin
-  - GraphQL plugin
-  - ...
+| Milestone | Scope |
+|---|---|
+| **v0** (Q3 2026) | 3-piece release: extension + SDK + skill. 5 templates. Asset bundling. PII auto-redaction. Docs site at `echoframes.dev`. |
+| **v0.1** | Community templates (`echoframes-recipes` ≥ 10). GitHub Action for CI capture-to-video on PR preview deploys. |
+| **v0.2+** | TBD by community signal. Studio web editor is intentionally **not** on the roadmap — `/echoframes` is the editor. |
 
-## Internal Design
+## License
 
-- [serialization](./docs/serialization.md)
-- [incremental snapshot](./docs/observer.md)
-- [replay](./docs/replay.md)
-- [sandbox](./docs/sandbox.md)
+MIT. Same as upstream rrweb.
 
-## Contribute Guide
+## Acknowledgements
 
-Since we want the record and replay sides to share a strongly typed data structure, rrweb is developed with typescript which provides stronger type support.
+- The rrweb team for the recording primitives that make this possible.
+- The Remotion team for proving React-to-video can work at production quality.
+- The PostHog and Highlight teams for hardening the rrweb fork landscape.
 
-[Typescript handbook](https://www.typescriptlang.org/docs/handbook/declaration-files/introduction.html)
+---
 
-1. Fork this repository.
-2. Run `yarn install` in the root to install required dependencies for all sub-packages (note: `npm install` is _not_ recommended).
-3. Run `yarn build:all` to build all packages and get a stable base, then `yarn dev` in the root to get auto-building for all the sub-packages whenever you modify anything.
-4. Navigate to one of the sub-packages (in the `packages` folder) where you'd like to make a change.
-5. Patch the code and run `yarn test` to run the tests, make sure they pass before you commit anything. Add test cases in order to avoid future regression.
-6. If tests are failing, but the change in output is desirable, run `yarn test:update` and carefully commit the changes in test output.
-7. Push the code and create a pull request.
-
-Protip: You can run `yarn test` in the root folder to run all the tests.
-
-In addition to adding integration tests and unit tests, rrweb also provides a REPL testing tool.
-
-[Using the REPL tool](./guide.md#REPL-tool)
-
-## Sponsors
-
-[Become a sponsor](https://opencollective.com/rrweb#sponsor) and get your logo on our README on Github with a link to your site.
-
-### Gold Sponsors 🥇
-
-<div dir="auto">
-
-<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/0/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/0/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/1/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/1/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/2/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/2/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/3/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/3/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/4/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/4/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/5/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/5/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/6/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/6/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
-
-</div>
-
-### Silver Sponsors 🥈
-
-<div dir="auto">
-
-<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/0/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/0/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/1/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/1/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/2/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/2/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/3/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/3/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/4/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/4/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/5/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/5/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/6/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/6/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
-
-</div>
-
-### Bronze Sponsors 🥉
-
-<div dir="auto">
-
-<a href="https://opencollective.com/rrweb/tiers/sponsors/0/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/0/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/sponsors/1/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/1/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/sponsors/2/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/2/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/sponsors/3/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/3/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/sponsors/4/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/4/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/sponsors/5/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/5/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/sponsors/6/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/6/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/sponsors/7/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/7/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/sponsors/8/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/8/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
-
-</div>
-
-### Backers
-
-<a href="https://opencollective.com/rrweb#sponsor" rel="nofollow"><img src="https://opencollective.com/rrweb/tiers/backers.svg?avatarHeight=36"></a>
-
-## Core Team Members
-
-<table>
-  <tr>
-    <td align="center">
-      <a href="https://github.com/Yuyz0112">
-        <img
-          src="https://avatars.githubusercontent.com/u/13651389?s=100"
-          width="100px;"
-          alt=""
-        />
-        <br /><sub><b>Yuyz0112</b></sub>
-        <br /><br />
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://github.com/YunFeng0817">
-        <img
-          src="https://avatars.githubusercontent.com/u/27533910?s=100"
-          width="100px;"
-          alt=""
-        />
-        <br /><sub><b>Yun Feng</b></sub>
-        <br /><br />
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://github.com/eoghanmurray">
-        <img
-          src="https://avatars.githubusercontent.com/u/156780?s=100"
-          width="100px;"
-          alt=""
-        />
-        <br /><sub><b>eoghanmurray</b></sub>
-        <br /><br />
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://github.com/juice10">
-        <img
-          src="https://avatars.githubusercontent.com/u/4106?s=100"
-          width="100px;"
-          alt=""
-        />
-        <br /><sub><b>Juice10</b></sub>
-        <br /><sub>open for rrweb consulting</sub>
-      </a>
-    </td>
-  </tr>
-</table>
-
-## Who's using rrweb?
-
-<table>
-  <tr>
-    <td align="center">
-      <a href="http://www.smartx.com/" target="_blank">
-        <img width="195px" src="https://www.rrweb.io/logos/smartx.png">
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://posthog.com?utm_source=rrweb&utm_medium=sponsorship&utm_campaign=open-source-sponsorship" target="_blank">
-        <img width="195px" src="https://www.rrweb.io/logos/posthog.png">
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://statcounter.com/session-replay/" target="_blank">
-        <img width="195px" src="https://statcounter.com/images/logo-statcounter-arc-blue.svg">
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://recordonce.com/" target="_blank">
-        <img width="195px" alt="Smart screen recording for SaaS" src="https://uploads-ssl.webflow.com/5f3d133183156245630d4446/5f3d1940abe8db8612c23521_Record-Once-logo-554x80px.svg">
-      </a>
-    </td>
-  </tr>
-    <tr>
-    <td align="center">
-      <a href="https://cux.io" target="_blank">
-        <img style="padding: 8px" alt="The first ever UX automation tool" width="195px" src="https://cux.io/cux-logo.svg">
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://remsupp.com" target="_blank">
-        <img style="padding: 8px" alt="Remote Access & Co-Browsing" width="195px" src="https://remsupp.com/images/logo.png">
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://highlight.io" target="_blank">
-        <img style="padding: 8px" alt="The open source, fullstack Monitoring Platform." width="195px" src="https://github.com/highlight/highlight/raw/main/highlight.io/public/images/logo.png">
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://analyzee.io" target="_blank">
-        <img style="padding: 8px" alt="Comprehensive data analytics platform that empowers businesses to gain valuable insights and make data-driven decisions." width="195px" src="https://cdn.analyzee.io/assets/analyzee-logo.png">
-      </a>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <a href="https://requestly.io" target="_blank">
-        <img style="padding: 8px" alt="Intercept, Modify, Record & Replay HTTP Requests." width="195px" src="https://github.com/requestly/requestly/assets/16779465/652552db-c867-44cb-9bb5-94a2026e04ca">
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://gleap.io" target="_blank">
-        <img style="padding: 8px" alt="In-app bug reporting & customer feedback platform." width="195px" src="https://assets-global.website-files.com/6506f3f29c68b1724807619d/6506f56010237164c6306591_GleapLogo.svg">
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://uxwizz.com" target="_blank">
-        <img style="padding: 8px" alt="Self-hosted website analytics with heatmaps and session recordings." width="195px" src="https://github.com/UXWizz/public-files/raw/main/assets/logo.png">
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://www.howdygo.com" target="_blank">
-        <img style="padding: 8px" alt="Interactive product demos for small marketing teams" width="195px" src="https://assets-global.website-files.com/650afb446f1dd5bd410f00cc/650b2cec6188ff54dd9b01e1_Logo.svg">
-      </a>
-    </td>
-  </tr>
-</table>
+<p align="center">
+  <sub>
+    Made by <a href="https://twitter.com/xeasonchan">Andrew</a> at <a href="https://tanka.ai">Tanka.ai</a> ·
+    Initial case study: <a href="https://memdex.ai">Memdex</a> ·
+    Issues + PRs welcome ·
+    Discussions tab is the best place to ask anything.
+  </sub>
+</p>

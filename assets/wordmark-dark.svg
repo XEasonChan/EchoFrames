@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  EchoFrames wordmark · dark mode · v1 · 2026-05-10
+  Same as wordmark.svg but with "Frames" in #f0eee8 (warm-stone foreground)
+  for use against dark backgrounds (HN dark mode, GitHub dark mode README,
+  social cards). "Echo" trail uses brightened blue rgb(120,145,255) so the
+  ghosts don't disappear on dark.
+-->
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 480 130"
+     width="480" height="130"
+     role="img" aria-labelledby="title desc"
+     preserveAspectRatio="xMidYMid meet">
+  <title id="title">EchoFrames</title>
+  <desc id="desc">EchoFrames wordmark, dark mode — italic serif "Echo" with echo trail in blue, sans "Frames" in warm stone.</desc>
+
+  <!-- echo trail layer 2 -->
+  <text x="6" y="96"
+        font-family="'Instrument Serif', 'Libre Baskerville', Georgia, serif"
+        font-style="italic"
+        font-weight="400"
+        font-size="96"
+        fill="#7891ff"
+        opacity="0.14">Echo</text>
+
+  <!-- echo trail layer 1 -->
+  <text x="23" y="96"
+        font-family="'Instrument Serif', 'Libre Baskerville', Georgia, serif"
+        font-style="italic"
+        font-weight="400"
+        font-size="96"
+        fill="#7891ff"
+        opacity="0.36">Echo</text>
+
+  <!-- echo solid -->
+  <text x="40" y="96"
+        font-family="'Instrument Serif', 'Libre Baskerville', Georgia, serif"
+        font-style="italic"
+        font-weight="400"
+        font-size="96"
+        fill="#4f6df5">Echo</text>
+
+  <!-- frames in warm stone for dark backgrounds -->
+  <text x="200" y="96"
+        font-family="'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif"
+        font-weight="700"
+        font-size="96"
+        letter-spacing="-2.4"
+        fill="#f0eee8">Frames</text>
+</svg>

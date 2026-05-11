@@ -1,240 +1,181 @@
 <p align="center">
-  <img width="100px" height="100px" src="https://www.rrweb.io/favicon.png">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./assets/wordmark-dark.svg" />
+    <img src="./assets/wordmark.svg" alt="EchoFrames" width="380" />
+  </picture>
 </p>
+
 <p align="center">
-  <a href="https://www.rrweb.io/" style="font-weight: bold">Try rrweb</a>
+  <em>把任意 Web 产品流程录下来，渲染成帧级精准的 Remotion 视频。<br />
+  Agent-first —— 用 Claude Code 驱动，不靠 timeline UI。</em>
 </p>
 
-# rrweb
+<p align="center">
+  <video src="./assets/launch-demo.mp4" controls autoplay loop muted playsinline width="720">
+    你的浏览器不支持嵌入视频。<a href="./assets/launch-demo.mp4">下载（3.4 MB MP4）</a>.
+  </video>
+</p>
 
-**[rrweb 纪录片（中文）](https://www.bilibili.com/video/BV1wL4y1B7wN?share_source=copy_web)**
+<p align="center">
+  <sub>↑ 44 秒的 <a href="https://memdex.ai">Memdex</a> launch 视频，整条 pipeline 跑出来的产物。6 个 beat，ChatGPT / Claude / Gemini 跨平台演示。每一帧都是真实 DOM，不是录屏。</sub>
+</p>
 
-[![Join the chat at slack](https://img.shields.io/badge/slack-@rrweb-teal.svg?logo=slack)](https://join.slack.com/t/rrweb/shared_invite/zt-siwoc6hx-uWay3s2wyG8t5GpZVb8rWg)
-[![Reddit](https://img.shields.io/badge/reddit-r/rrweb-teal.svg?logo=reddit)](https://www.reddit.com/r/rrweb)
-![recorder gzip size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/@rrweb/record@latest/umd/record.min.js?compression=gzip&label=recorder%20gzip%20size&max=200000&softmax=100000)
-![replayer gzip size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/@rrweb/replay@latest/umd/replay.min.js?compression=gzip&label=replayer%20gzip%20size&max=200000&softmax=100000)
-[![](https://data.jsdelivr.com/v1/package/npm/rrweb/badge)](https://www.jsdelivr.com/package/npm/rrweb)
+<p align="center">
+  <a href="./ECHOFRAMES_V0_PLAN.md">v0 plan</a> ·
+  <a href="https://memdex.ai">case study</a> ·
+  <a href="#快速开始">快速开始</a> ·
+  <a href="./README.md">English</a>
+</p>
 
-> 我已开通 Github Sponsor， 您可以通过赞助的形式帮助 rrweb 的开发。
+---
 
-rrweb 是 'record and replay the web' 的简写，旨在利用现代浏览器所提供的强大 API 录制并回放任意 web 界面中的用户操作。
+## 这是要解决什么问题
 
-## 指南
+大家都开始用 Remotion 做 launch 视频了。保真度还是差。
 
-[**📚 rrweb 使用指南 📚**](./guide.zh_CN.md)
+- **录屏类工具**（Loom · Tella · ScreenStudio · QuickTime）上手简单，但输出是扁平的像素视频。不能重渲到 4K，不能改一个按钮颜色，不能重剪。产品 UI 一变，所有视频都要重录一遍。
+- **手写 Remotion** 控制力满分，但你得在 React 里把真实产品 UI 重新搭一遍，每一个镜头几个小时——哪怕全程让 LLM 写代码。
+- **现有 rrweb 播放器**（PostHog · Highlight）在 iframe 里回放给人看的，不是确定性的视频渲染器：正放和拖动到同一帧给出的 DOM 不一样（[rrweb#1816](https://github.com/rrweb-io/rrweb/issues/1816)）。
 
-[**🍳 场景示例 🍳**](./docs/recipes/index.zh_CN.md)
+中间缺的 primitive：**录下真实的 DOM，再用 Remotion 确定性地渲成视频。** 这就是 EchoFrames。
 
-## 项目结构
+## EchoFrames 是什么
 
-rrweb 主要由 3 部分组成：
+三件套：
 
-- **[rrweb-snapshot](https://github.com/rrweb-io/rrweb/tree/master/packages/rrweb-snapshot/)**，包含 snapshot 和 rebuild 两个功能。snapshot 用于将 DOM 及其状态转化为可序列化的数据结构并添加唯一标识；rebuild 则是将 snapshot 记录的数据结构重建为对应的 DOM。
-- **[rrweb](https://github.com/rrweb-io/rrweb)**，包含 record 和 replay 两个功能。record 用于记录 DOM 中的所有变更（mutation）；replay 则是将记录的变更按照对应的时间一一重放。
-- **[rrweb-player](https://github.com/rrweb-io/rrweb/tree/master/packages/rrweb-player/)**，为 rrweb 提供一套 UI 控件，提供基于 GUI 的暂停、快进、拖拽至任意时间点播放等功能。
+1. **`echoframes-capture`** —— 浏览器扩展（Chrome / Firefox）。点录制，用你的产品，点停止。DOM mutation + CSS + 字体 + 图片全部抓下来，存到 `~/echoframes/captures/{host}__{YYYY-MM-DD-HHmm}.json`。不上传，不 SaaS——文件只在你本机。
+2. **`echoframes`** —— npm SDK。一个纯函数 `seekToFrame(events, frameIndex, fps)` 跑在 rrdom 之上，加一个 React 组件 `<EchoFrame events={…} />` 给 Remotion 用。正放和拖到任意帧产出**完全一致**的 DOM，任意分辨率输出。
+3. **`/echoframes`** —— Claude Code 技能。直接告诉你的 agent：*"扫一下我的 captures，把那个 Notion 流程接到 launch 视频的 Beat 4，加一句 'see how it works' 字幕，然后渲出来。"* Agent 对话式完成，不需要点 timeline。
+
+## 为什么 agent-first 是 killer angle
+
+现有的 launch 视频工具假设有一个人在点 timeline。EchoFrames 假设有一个 AI agent 在读写源码——这解锁了 GUI 工具做不到的工作流：
+
+### 1. 营销批量出 variant
+
+> *"同一个流程，10 套字幕 × 3 个 VO 声音 × 2 个画幅，全部渲出来。"*
+
+营销不需要一支完美的视频，他们需要 60 支廉价 variant 来找出哪个 use case 命中最重。在 EchoFrames 里这是一个 YAML manifest 上的 for 循环，不是 60 次 After Effects session。
+
+### 2. PR 上的 Agent 自审
+
+> *你的 code agent ship 了一个 landing page → 自己录一遍页面 → 配上一段讲解为什么这么设计的 VO → 把 MP4 贴回 PR。*
+
+以前你的 reviewer 看 diff，现在他看一段 30 秒的旁白演示。Agent 多花的成本：可以忽略。
+
+### 3. 永远可重渲
+
+产品 UI 演进。在 EchoFrames 里，每一支 launch 视频都基于 capture 重新渲染。改一次 UI，所有 demo 视频自动刷新。
+
+## 当前状态
+
+**Pre-v0**。目标 7 周后公开发布。Scope 和 GTM 在 [`ECHOFRAMES_V0_PLAN.md`](./ECHOFRAMES_V0_PLAN.md)。
+
+整条 pipeline 已经端到端跑通了：[**Memdex 的 launch 视频**](https://memdex.ai)（44 秒、6 个 beat、ChatGPT / Claude / Gemini 跨模型 AI 记忆 demo）就是用这套 stack 早期版本做的。生产参考代码在 [Memdex repo](https://github.com/XEasonChan/memdex) 的 `apps/launch-video/`。
+
+<a name="快速开始"></a>
+## 快速开始
+
+> ⚠️ Pre-v0 预览。下面的命令是目标形态——还没全部接通。完成度跟踪在 `ECHOFRAMES_V0_PLAN.md` §7。
+
+```bash
+# 1. 装 capture 扩展
+git clone https://github.com/XEasonChan/echoframes
+cd echoframes/packages/echoframes-capture
+yarn install && yarn pack:chrome
+# 在 chrome://extensions 把 dist/chrome/ 作为 unpacked 加载
+
+# 2. 录一段流程
+# 点扩展 popup → 录制 → 用站点 → 停止
+# → 文件落到 ~/echoframes/captures/{host}__{date}.json
+
+# 3. 用 Claude Code 对话式接到 Remotion 项目里
+cd ~/my-launch-video
+claude
+
+> /echoframes 把我最新的 notion capture 接成一个 12 秒的 beat，
+> 字幕写 "Notion AI in 30 seconds"，然后渲成 MP4
+```
+
+Agent 接下来会：
+1. 扫描 `~/echoframes/captures/` 并和你确认是哪个文件
+2. 检查时长 / 事件数 / 资源大小
+3. 一次性问 fps / 分辨率 / 是否打码 等参数
+4. 跑 `npx echoframes bundle` 把字体和图片 inline 进去
+5. 在 Remotion 项目的 `src/beats/` 写出 React 组件
+6. 更新 `Composition.tsx` 和 `Root.tsx` 的 sequence
+7. 渲出 MP4
+
+不用 Claude Code 的手动用法见 [`docs/manual.md`](./docs/manual.md)（v0 时补）。
+
+## v0 起手 5 套模板
+
+每套都是独立的 Remotion 项目，可塞 1 个或多个 capture。
+
+| 模板 | 用途 | 时长 |
+|---|---|---|
+| `launch-hero` | 30 秒产品 launch，VO + 字幕（Memdex 范式）| ~30s |
+| `feature-walkthrough` | 单一功能聚焦讲解，含光标高亮 | 15-45s |
+| `before-after` | 一个 UI 改动的 before / after 对照 | ~20s |
+| `3-up-comparison` | 三个竞品 / 三个状态 / 三个 persona 同框 | ~25s |
+| `testimonial-card` | 抓下来的产品 UI 配一段引用浮层 | ~10s |
+
+社区贡献的模板会进 [`echoframes-recipes`](https://github.com/XEasonChan/echoframes-recipes)（独立 repo，欢迎 PR）。
+
+## EchoFrames 和别的工具有什么不同
+
+|   | 录屏类 | rrweb 回放 | Remotion 单用 | **EchoFrames** |
+|---|:---:|:---:|:---:|:---:|
+| 录真实产品 UI | ✅ | ✅ | ❌ | ✅ |
+| 矢量级输出（任意分辨率）| ❌ | ❌ | ✅ | ✅ |
+| 拖到任意帧 = 正放到该帧 | ❌ | ❌ | ✅ | ✅ |
+| 产品 UI 变 → 视频自动更新 | ❌ | ❌ | ❌ | ✅ |
+| 源码可编辑（不是二进制成品） | ❌ | ❌ | ✅ | ✅ |
+| Agent 驱动写作 | ❌ | ❌ | 部分 | ✅ |
+| 批量出 variant | ❌ | ❌ | 部分 | ✅ |
+
+## 站在巨人肩上
+
+下面这些 primitive 没有一项是我们造的：
+
+- [**rrweb**](https://github.com/rrweb-io/rrweb)（MIT）—— DOM 事件录制 + snapshot。capture 扩展 fork 自 `rrweb-io/rrweb` `packages/web-extension`。
+- [**rrdom**](https://github.com/rrweb-io/rrweb/tree/master/packages/rrdom)（MIT）—— 虚拟 DOM 树，是确定性 seek 的底座。
+- [**Remotion**](https://remotion.dev/) —— React → MP4 渲染管线。
+- [**posthog-react-rrweb-player**](https://github.com/PostHog/posthog-react-rrweb-player)（MIT）—— 在 React 里嵌 rrweb 的参考实现。
+
+EchoFrames 自己加的部分：
+
+- 一个纯同步的 `seekToFrame(events, frameIndex, fps)`（rrweb 的 `Replayer.pause(t)` 是非确定性的，参见 [rrweb#1816](https://github.com/rrweb-io/rrweb/issues/1816)）。
+- `<EchoFrame>` Remotion 桥接组件。
+- 离线资源 bundler（字体 + 图片 + CORS workaround）。
+- v0 起手 5 套模板。
+- Claude Code 技能。
 
 ## Roadmap
 
-- storage engine: 对大规模 rrweb 数据进行去重
-- 在常见场景下对 mutation 数据进行压缩
-- 基于新的插件 API 提供更多插件，包括:
-  - XHR 插件
-  - fetch 插件
-  - GraphQL 插件
-  - ...
+| 节点 | 范围 |
+|---|---|
+| **v0**（2026 Q3 目标）| 三件套首发：扩展 + SDK + 技能。5 套模板。资源 bundle。PII 自动打码。文档站 `echoframes.dev`。 |
+| **v0.1** | 社区模板（`echoframes-recipes` ≥ 10 个）。GitHub Action：PR 预览部署 → 自动录 + 渲 → 贴回 PR。 |
+| **v0.2+** | 看社区信号决定。Studio web 编辑器**故意**不在 roadmap——`/echoframes` 就是编辑器。 |
 
-## Internal Design
+## 协议
 
-- [序列化](./docs/serialization.zh_CN.md)
-- [增量快照](./docs/observer.zh_CN.md)
-- [回放](./docs/replay.zh_CN.md)
-- [沙盒](./docs/sandbox.zh_CN.md)
+MIT。和上游 rrweb 一致。
 
-## Contribute Guide
+## 致谢
 
-为了保证录制和回放时可以对应到一致的数据结构，rrweb 采用 typescript 开发以提供更强的类型支持。
+- 感谢 rrweb 团队提供让这一切成为可能的录制 primitive。
+- 感谢 Remotion 团队证明 React-to-video 能做到生产级。
+- 感谢 PostHog 和 Highlight 团队把 rrweb fork 生态打磨得更稳。
 
-[Typescript 手册](https://www.typescriptlang.org/docs/handbook/declaration-files/introduction.html)
+---
 
-1. Fork 需要修改的 rrweb 组件仓库
-2. `yarn install` 安装所需依赖
-3. 修改代码并通过测试
-4. 提交代码，创建 pull request
-
-除了添加集成测试和单元测试之外，rrweb 还提供了交互式的测试工具。
-
-[使用 REPL 工具](./guide.zh_CN.md#REPL-工具)
-
-## Sponsors
-
-[Become a sponsor](https://opencollective.com/rrweb#sponsor) and get your logo on our README on Github with a link to your site.
-
-### Gold Sponsors 🥇
-
-<div dir="auto">
-
-<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/0/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/0/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/1/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/1/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/2/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/2/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/3/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/3/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/4/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/4/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/5/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/5/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/6/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/6/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
-
-</div>
-
-### Silver Sponsors 🥈
-
-<div dir="auto">
-
-<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/0/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/0/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/1/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/1/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/2/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/2/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/3/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/3/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/4/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/4/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/5/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/5/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/6/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/6/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
-
-</div>
-
-### Bronze Sponsors 🥉
-
-<div dir="auto">
-
-<a href="https://opencollective.com/rrweb/tiers/sponsors/0/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/0/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/sponsors/1/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/1/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/sponsors/2/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/2/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/sponsors/3/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/3/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/sponsors/4/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/4/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/sponsors/5/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/5/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/sponsors/6/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/6/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/sponsors/7/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/7/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/sponsors/8/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/8/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
-
-</div>
-
-### Backers
-
-<a href="https://opencollective.com/rrweb#sponsor" rel="nofollow"><img src="https://opencollective.com/rrweb/tiers/backers.svg?avatarHeight=36"></a>
-
-## Core Team Members
-
-<table>
-  <tr>
-    <td align="center">
-      <a href="https://github.com/Yuyz0112">
-        <img
-          src="https://avatars.githubusercontent.com/u/13651389?s=100"
-          width="100px;"
-          alt=""
-        />
-        <br /><sub><b>Yuyz0112</b></sub>
-        <br /><br />
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://github.com/YunFeng0817">
-        <img
-          src="https://avatars.githubusercontent.com/u/27533910?s=100"
-          width="100px;"
-          alt=""
-        />
-        <br /><sub><b>Yun Feng</b></sub>
-        <br /><br />
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://github.com/eoghanmurray">
-        <img
-          src="https://avatars.githubusercontent.com/u/156780?s=100"
-          width="100px;"
-          alt=""
-        />
-        <br /><sub><b>eoghanmurray</b></sub>
-        <br /><br />
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://github.com/Juice10">
-        <img
-          src="https://avatars.githubusercontent.com/u/4106?s=100"
-          width="100px;"
-          alt=""
-        />
-        <br /><sub><b>Juice10</b></sub>
-        <br /><sub>open for rrweb consulting</sub>
-      </a>
-    </td>
-  </tr>
-</table>
-
-## Who's using rrweb?
-
-<table>
-  <tr>
-    <td align="center">
-      <a href="http://www.smartx.com/" target="_blank">
-        <img width="195px" src="https://www.rrweb.io/logos/smartx.png">
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://posthog.com?utm_source=rrweb&utm_medium=sponsorship&utm_campaign=open-source-sponsorship" target="_blank">
-        <img width="195px" src="https://www.rrweb.io/logos/posthog.png">
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://statcounter.com/session-replay/" target="_blank">
-        <img width="195px" src="https://statcounter.com/images/logo-statcounter-arc-blue.svg">
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://recordonce.com/" target="_blank">
-        <img width="195px" alt="Smart screen recording for SaaS" src="https://uploads-ssl.webflow.com/5f3d133183156245630d4446/5f3d1940abe8db8612c23521_Record-Once-logo-554x80px.svg">
-      </a>
-    </td>
-  </tr>
-    <tr>
-    <td align="center">
-      <a href="https://cux.io" target="_blank">
-        <img style="padding: 8px" alt="The first ever UX automation tool" width="195px" src="https://cux.io/cux-logo.svg">
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://remsupp.com" target="_blank">
-        <img style="padding: 8px" alt="Remote Access & Co-Browsing" width="195px" src="https://remsupp.com/images/logo.png">
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://highlight.io" target="_blank">
-        <img style="padding: 8px" alt="The open source, fullstack Monitoring Platform." width="195px" src="https://github.com/highlight/highlight/raw/main/highlight.io/public/images/logo.png">
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://analyzee.io" target="_blank">
-        <img style="padding: 8px" alt="Comprehensive data analytics platform that empowers businesses to gain valuable insights and make data-driven decisions." width="195px" src="https://cdn.analyzee.io/assets/analyzee-logo.png">
-      </a>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <a href="https://requestly.io" target="_blank">
-        <img style="padding: 8px" alt="Intercept, Modify, Record & Replay HTTP Requests." width="195px" src="https://github.com/requestly/requestly/assets/16779465/652552db-c867-44cb-9bb5-94a2026e04ca">
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://gleap.io" target="_blank">
-        <img style="padding: 8px" alt="In-app bug reporting & customer feedback platform." width="195px" src="https://assets-global.website-files.com/6506f3f29c68b1724807619d/6506f56010237164c6306591_GleapLogo.svg">
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://uxwizz.com" target="_blank">
-        <img style="padding: 8px" alt="Self-hosted website analytics with heatmaps and session recordings." width="195px" src="https://github.com/UXWizz/public-files/raw/main/assets/logo.png">
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://www.howdygo.com" target="_blank">
-        <img style="padding: 8px" alt="Interactive product demos for small marketing teams" width="195px" src="https://assets-global.website-files.com/650afb446f1dd5bd410f00cc/650b2cec6188ff54dd9b01e1_Logo.svg">
-      </a>
-    </td>
-  </tr>
-</table>
+<p align="center">
+  <sub>
+    Made by <a href="https://twitter.com/xeasonchan">Andrew</a> at <a href="https://tanka.ai">Tanka.ai</a> ·
+    Initial case study: <a href="https://memdex.ai">Memdex</a> ·
+    Issues / PR 直接来 ·
+    Discussions tab 是聊天的最佳去处。
+  </sub>
+</p>

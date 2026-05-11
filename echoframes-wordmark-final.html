@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>EchoFrames · final wordmark · serif + echo trail</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --warm-stone: #f7f6f3;
+    --ink: #0a0a14;
+    --ink-soft: #1d1d24;
+    --ink-mute: #5b5b66;
+    --echo-blue: #4f6df5;
+    --serif-italic: 'Instrument Serif', 'Libre Baskerville', Georgia, serif;
+    --serif-roman: 'Libre Baskerville', 'Instrument Serif', Georgia, serif;
+    --serif-instr: 'Instrument Serif', Georgia, serif;
+    --sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: var(--sans);
+    color: var(--ink);
+    background: var(--warm-stone);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  header {
+    padding: 64px 80px 32px;
+    border-bottom: 1px solid rgba(0,0,0,.06);
+  }
+  header h1 {
+    margin: 0 0 12px;
+    font-family: var(--serif-italic);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 48px;
+    letter-spacing: -0.005em;
+  }
+  header .meta {
+    color: var(--ink-mute);
+    font-size: 14px;
+    line-height: 1.6;
+    max-width: 720px;
+  }
+  header .meta b { color: var(--ink); font-weight: 600; }
+
+  section {
+    padding: 56px 80px;
+    border-bottom: 1px solid rgba(0,0,0,.06);
+  }
+  section.dark {
+    background: #0a0a14;
+    color: #f0eee8;
+  }
+  section.dark .label,
+  section.dark .desc { color: rgba(240, 238, 232, 0.55); }
+  section.dark .meta-row .key { color: rgba(240, 238, 232, 0.45); }
+
+  .label {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--ink-mute);
+    margin: 0 0 32px;
+  }
+  .desc {
+    font-family: var(--sans);
+    font-size: 13px;
+    color: var(--ink-mute);
+    line-height: 1.5;
+    margin: 24px 0 0;
+    max-width: 540px;
+  }
+
+  /* === reusable: echo wordmark ============================== */
+  /* The echo trail is realized via two pseudo-elements that
+     duplicate the "Echo" content. Frames stays solid. */
+  .ef {
+    display: inline-flex;
+    align-items: baseline;
+    line-height: 1;
+    position: relative;
+  }
+  .ef .echo-stack {
+    position: relative;
+    display: inline-block;
+    color: var(--echo-blue);
+  }
+  .ef.dark-on-light .echo-stack { color: var(--echo-blue); }
+  .ef.light-on-dark .echo-stack { color: var(--echo-blue); }
+
+  .ef .echo-stack::before,
+  .ef .echo-stack::after {
+    content: 'Echo';
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    font: inherit;
+  }
+  .ef .echo-stack::before {
+    transform: translateX(-0.18em);
+    color: rgba(79, 109, 245, 0.34);
+  }
+  .ef .echo-stack::after {
+    transform: translateX(-0.36em);
+    color: rgba(79, 109, 245, 0.14);
+  }
+  .ef.light-on-dark .echo-stack::before {
+    color: rgba(120, 145, 255, 0.36);
+  }
+  .ef.light-on-dark .echo-stack::after {
+    color: rgba(120, 145, 255, 0.14);
+  }
+
+  .ef .frames {
+    font-family: var(--sans);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: inherit;
+    margin-left: 0.04em;
+  }
+
+  /* === variant A: Instrument Serif italic Echo === */
+  .ef.A .echo-stack {
+    font-family: var(--serif-instr);
+    font-style: italic;
+    font-weight: 400;
+    /* Instrument Serif sits a bit higher; nudge for baseline. */
+    letter-spacing: 0.005em;
+  }
+
+  /* === variant B: Libre Baskerville roman Echo === */
+  .ef.B .echo-stack {
+    font-family: var(--serif-roman);
+    font-weight: 400;
+    letter-spacing: -0.015em;
+  }
+
+  /* === variant C: Instrument Serif roman Echo === */
+  .ef.C .echo-stack {
+    font-family: var(--serif-instr);
+    font-weight: 400;
+    letter-spacing: -0.005em;
+  }
+
+  /* === sizes === */
+  .size-hero  { font-size: 168px; }
+  .size-h1    { font-size: 96px; }
+  .size-nav   { font-size: 32px; }
+  .size-tiny  { font-size: 16px; }
+
+  /* hero variant has slightly more dramatic offsets */
+  .size-hero .echo-stack::before { transform: translateX(-0.16em); }
+  .size-hero .echo-stack::after  { transform: translateX(-0.32em); }
+
+  /* tiny size: collapse the trail (would be unreadable) */
+  .size-tiny .echo-stack::before,
+  .size-tiny .echo-stack::after { display: none; }
+
+  /* meta rows next to wordmark */
+  .meta-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 11px;
+    margin-top: 20px;
+    color: var(--ink-mute);
+  }
+  .meta-row .key { color: var(--ink-mute); }
+
+  /* size grid */
+  .size-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 56px;
+    align-items: end;
+    margin-top: 16px;
+  }
+  .size-grid .item {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .size-grid .item .row {
+    display: flex;
+    align-items: baseline;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .size-grid .item .row .at {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-mute);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+  }
+
+  /* favicon swatch */
+  .favicon-row {
+    display: flex;
+    gap: 32px;
+    align-items: center;
+    margin-top: 16px;
+  }
+  .favicon {
+    width: 64px;
+    height: 64px;
+    border-radius: 14px;
+    background: var(--ink);
+    color: var(--echo-blue);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--serif-instr);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 38px;
+    letter-spacing: -0.02em;
+    position: relative;
+    overflow: hidden;
+  }
+  .favicon::before {
+    content: 'E';
+    position: absolute;
+    left: 13px;
+    color: rgba(120, 145, 255, 0.36);
+    transform: translateX(-3px);
+  }
+  .favicon::after {
+    content: 'E';
+    position: absolute;
+    left: 16px;
+    color: var(--echo-blue);
+  }
+  .favicon.small { width: 32px; height: 32px; font-size: 19px; border-radius: 7px; }
+  .favicon.small::before { left: 7px; transform: translateX(-1.5px); }
+  .favicon.small::after  { left: 8px; }
+  .favicon.tiny  { width: 16px; height: 16px; font-size: 9.5px; border-radius: 3px; }
+  .favicon.tiny::before { left: 3.5px; transform: translateX(-1px); }
+  .favicon.tiny::after  { left: 4px; }
+  .favicon.invert { background: var(--warm-stone); color: var(--echo-blue); }
+  .favicon.invert::before { color: rgba(79, 109, 245, 0.34); }
+  .favicon.invert::after  { color: var(--echo-blue); }
+
+  /* recommendation banner */
+  .rec {
+    background: #fffbe9;
+    border: 1px solid #efe6c2;
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-top: 20px;
+    font-size: 13px;
+    color: #5a4f15;
+    line-height: 1.5;
+  }
+  .rec b { color: #1d1d24; }
+
+  /* responsive */
+  @media (max-width: 980px) {
+    .size-grid { grid-template-columns: 1fr; gap: 36px; }
+    section { padding: 36px 32px; }
+    header { padding: 36px 32px 20px; }
+    .size-hero { font-size: 100px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>EchoFrames · final wordmark</h1>
+  <p class="meta">
+    <b>Locked:</b> Instrument Serif italic "Echo" in echo-blue (<code>#4f6df5</code>) + echo trail + Inter 700 "Frames" in ink (<code>#0a0a14</code>).
+    The trail is a CSS pseudo-element duplicate of the "Echo" word, offset left by <code>0.18em</code> + <code>0.36em</code>, opacity dropping <code>34% → 14%</code>. Geometry scales with type size automatically.
+  </p>
+</header>
+
+<!-- ============================================================
+     A · Instrument Serif italic (most "Memdex")
+     ============================================================ -->
+<section>
+  <p class="label">Variant A · Instrument Serif italic</p>
+
+  <div class="ef A size-hero dark-on-light">
+    <span class="echo-stack">Echo</span><span class="frames">Frames</span>
+  </div>
+
+  <div class="size-grid">
+    <div class="item">
+      <div class="row">
+        <div class="ef A size-h1 dark-on-light">
+          <span class="echo-stack">Echo</span><span class="frames">Frames</span>
+        </div>
+        <span class="at">96 px · h1</span>
+      </div>
+      <div class="row">
+        <div class="ef A size-nav dark-on-light">
+          <span class="echo-stack">Echo</span><span class="frames">Frames</span>
+        </div>
+        <span class="at">32 px · nav</span>
+      </div>
+    </div>
+    <div class="item">
+      <div class="row">
+        <div class="ef A size-tiny dark-on-light">
+          <span class="echo-stack">Echo</span><span class="frames">Frames</span>
+        </div>
+        <span class="at">16 px · inline (trail collapsed)</span>
+      </div>
+    </div>
+  </div>
+
+  <p class="desc">
+    Italic gives "Echo" a literal sense of motion — the word is already leaning forward when it echoes. Most premium feel.
+    Reads as a <i>publication / studio brand</i> not a CLI tool — that's a feature for marketing-side users, a small risk for HN where developers might dismiss it as "fancy".
+  </p>
+</section>
+
+<!-- ============================================================
+     Dark mode (Variant A locked)
+     ============================================================ -->
+<section class="dark">
+  <p class="label">Dark mode · Variant A</p>
+
+  <div class="ef A size-hero light-on-dark">
+    <span class="echo-stack">Echo</span><span class="frames">Frames</span>
+  </div>
+
+  <div class="size-grid">
+    <div class="item">
+      <div class="row">
+        <div class="ef A size-h1 light-on-dark">
+          <span class="echo-stack">Echo</span><span class="frames">Frames</span>
+        </div>
+        <span class="at">96 px · h1</span>
+      </div>
+      <div class="row">
+        <div class="ef A size-nav light-on-dark">
+          <span class="echo-stack">Echo</span><span class="frames">Frames</span>
+        </div>
+        <span class="at">32 px · nav</span>
+      </div>
+    </div>
+    <div class="item">
+      <div class="row">
+        <div class="ef A size-tiny light-on-dark">
+          <span class="echo-stack">Echo</span><span class="frames">Frames</span>
+        </div>
+        <span class="at">16 px · inline</span>
+      </div>
+    </div>
+  </div>
+
+  <p class="desc">
+    Trail opacity drops on dark backgrounds (light pixels on dark are perceptually heavier). Adjusted to 30% → 10% so the trail still reads as background.
+  </p>
+</section>
+
+<!-- ============================================================
+     Favicon system
+     ============================================================ -->
+<section>
+  <p class="label">Favicon · "E" with serif italic + echo trail</p>
+
+  <div class="favicon-row">
+    <div>
+      <div class="favicon"></div>
+      <div class="meta-row"><span class="key">64 × 64 (npm avatar / GitHub org)</span></div>
+    </div>
+    <div>
+      <div class="favicon small"></div>
+      <div class="meta-row"><span class="key">32 × 32 (browser tab)</span></div>
+    </div>
+    <div>
+      <div class="favicon tiny"></div>
+      <div class="meta-row"><span class="key">16 × 16 (favicon)</span></div>
+    </div>
+    <div>
+      <div class="favicon invert"></div>
+      <div class="meta-row"><span class="key">inverted (light mode tab)</span></div>
+    </div>
+  </div>
+
+  <p class="desc">
+    The favicon collapses the wordmark to a single italic "E" with the same echo-trail concept — at 16 px the trail becomes a single ghost layer (any more would blur out). The icon is intentionally <i>not</i> "EF" so it doesn't compete with the wordmark visually.
+  </p>
+
+  <div class="rec">
+    <b>Recommendation:</b> ship <b>Variant A (Instrument Serif italic)</b> as the primary wordmark + the italic "E" favicon system. Same italic already lives in Memdex's hero, so brand consistency is free. If HN headline feedback later says "looks too fancy", swap to <b>Variant C (Instrument Serif roman)</b> — the trail concept survives the swap with no other changes.
+  </div>
+</section>
+
+<!-- ============================================================
+     Quiet copy block — possible animation hint
+     ============================================================ -->
+<section>
+  <p class="label">Future polish · animated entrance</p>
+  <p class="desc">
+    On docs-site load, the trail can <i>arrive</i>: solid Echo fades in, then ghost-1 fades in 200ms later (translated -8px → -18px), then ghost-2 at +120ms more.
+    Total entrance ≈ 400ms. Once seated, the wordmark is static. Repeats only on full page navigation, never on hover. (Don't animate on every scroll — it's a wordmark, not a banner.)
+  </p>
+</section>
+
+</body>
+</html>

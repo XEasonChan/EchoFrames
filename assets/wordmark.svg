@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  EchoFrames wordmark · v1 · 2026-05-10
+  Direction: Instrument Serif italic "Echo" in echo-blue (#4f6df5) with
+  echo-trail (2 ghost layers, opacity 0.34 / 0.14, offset -0.18em / -0.36em)
+  + Inter 700 "Frames" in ink (#0a0a14).
+
+  Note: this SVG uses live web-font references. For best rendering, embed
+  Instrument Serif + Inter via the host page (Google Fonts). For static
+  rendering on GitHub README and similar sanitized contexts, system serif
+  + system sans fallbacks kick in. To make this fully self-contained,
+  outline the text to paths via Figma/Inkscape (TODO).
+-->
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 480 130"
+     width="480" height="130"
+     role="img" aria-labelledby="title desc"
+     preserveAspectRatio="xMidYMid meet">
+  <title id="title">EchoFrames</title>
+  <desc id="desc">EchoFrames wordmark — italic serif "Echo" with echo trail in blue, sans "Frames" in ink.</desc>
+
+  <!-- echo trail layer 2 (deepest, leftmost) — opacity 0.14 -->
+  <text x="6" y="96"
+        font-family="'Instrument Serif', 'Libre Baskerville', Georgia, serif"
+        font-style="italic"
+        font-weight="400"
+        font-size="96"
+        fill="#4f6df5"
+        opacity="0.14">Echo</text>
+
+  <!-- echo trail layer 1 — opacity 0.34 -->
+  <text x="23" y="96"
+        font-family="'Instrument Serif', 'Libre Baskerville', Georgia, serif"
+        font-style="italic"
+        font-weight="400"
+        font-size="96"
+        fill="#4f6df5"
+        opacity="0.34">Echo</text>
+
+  <!-- echo solid -->
+  <text x="40" y="96"
+        font-family="'Instrument Serif', 'Libre Baskerville', Georgia, serif"
+        font-style="italic"
+        font-weight="400"
+        font-size="96"
+        fill="#4f6df5">Echo</text>
+
+  <!-- frames -->
+  <text x="200" y="96"
+        font-family="'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif"
+        font-weight="700"
+        font-size="96"
+        letter-spacing="-2.4"
+        fill="#0a0a14">Frames</text>
+</svg>

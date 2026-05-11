@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>EchoFrames · wordmark explorations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --warm-stone: #f7f6f3;
+    --ink: #0a0a14;
+    --ink-soft: #1d1d24;
+    --ink-mute: #5b5b66;
+    --memdex-blue: #3b82f6;
+    --echo-blue: #4f6df5;
+    --serif: 'Libre Baskerville', 'Instrument Serif', Georgia, serif;
+    --serif-italic: 'Instrument Serif', 'Libre Baskerville', Georgia, serif;
+    --sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: var(--sans);
+    color: var(--ink);
+    background: var(--warm-stone);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  header {
+    padding: 64px 80px 32px;
+    border-bottom: 1px solid rgba(0,0,0,.06);
+  }
+  header h1 {
+    margin: 0 0 12px;
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 40px;
+    letter-spacing: -0.01em;
+  }
+  header .meta {
+    color: var(--ink-mute);
+    font-size: 14px;
+    line-height: 1.6;
+    max-width: 720px;
+  }
+  header .meta b { color: var(--ink); font-weight: 600; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: rgba(0,0,0,.06);
+    margin: 0;
+  }
+  .cell {
+    background: var(--warm-stone);
+    padding: 64px 56px 48px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 320px;
+  }
+  .cell.light { background: #ffffff; }
+  .cell.dark { background: #0a0a14; color: #f0eee8; }
+  .cell.dark .label,
+  .cell.dark .desc { color: rgba(240, 238, 232, 0.6); }
+
+  .label {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-mute);
+    margin-bottom: 24px;
+  }
+  .desc {
+    font-family: var(--sans);
+    font-size: 13px;
+    color: var(--ink-mute);
+    line-height: 1.5;
+    margin-top: 28px;
+  }
+
+  /* === concept 1 — clean sans bicolor (Remotion-style) === */
+  .c1 {
+    font-family: var(--sans);
+    font-size: 80px;
+    letter-spacing: -0.025em;
+    line-height: 1;
+  }
+  .c1 .a { font-weight: 400; color: var(--ink); }
+  .c1 .b { font-weight: 700; color: var(--ink); }
+
+  /* === concept 2 — serif/sans hybrid (Memdex-aligned) === */
+  .c2 {
+    font-size: 80px;
+    letter-spacing: -0.015em;
+    line-height: 1;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 4px;
+  }
+  .c2 .a {
+    font-family: var(--serif);
+    font-weight: 400;
+    color: var(--ink);
+  }
+  .c2 .b {
+    font-family: var(--sans);
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.025em;
+  }
+
+  /* === concept 3 — italic accent (Memdex feel) === */
+  .c3 {
+    font-size: 84px;
+    line-height: 1;
+    letter-spacing: -0.01em;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 2px;
+  }
+  .c3 .a {
+    font-family: var(--serif-italic);
+    font-style: italic;
+    font-weight: 400;
+    color: var(--ink);
+  }
+  .c3 .b {
+    font-family: var(--sans);
+    font-weight: 500;
+    color: var(--ink);
+    letter-spacing: -0.025em;
+  }
+
+  /* === concept 4 — frame ticks (mono-flavored) === */
+  .c4 {
+    font-family: var(--sans);
+    font-size: 72px;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 18px;
+  }
+  .c4 .ticks {
+    display: inline-flex;
+    gap: 4px;
+  }
+  .c4 .ticks span {
+    width: 4px;
+    height: 36px;
+    background: var(--echo-blue);
+    border-radius: 1px;
+  }
+  .c4 .ticks span:nth-child(1) { opacity: .25; }
+  .c4 .ticks span:nth-child(2) { opacity: .5; }
+  .c4 .ticks span:nth-child(3) { opacity: .75; }
+  .c4 .ticks span:nth-child(4) { opacity: 1; }
+
+  /* === concept 5 — echo ghost (the conceptual one) === */
+  .c5 {
+    font-family: var(--sans);
+    font-size: 76px;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1;
+    position: relative;
+    display: inline-block;
+  }
+  .c5 .echo-ghost {
+    color: var(--ink);
+    position: relative;
+    z-index: 2;
+  }
+  .c5::before {
+    content: 'Echo';
+    position: absolute;
+    left: -10px;
+    top: 0;
+    color: rgba(10, 10, 20, 0.16);
+    z-index: 1;
+  }
+  .c5::after {
+    content: 'Echo';
+    position: absolute;
+    left: -20px;
+    top: 0;
+    color: rgba(10, 10, 20, 0.06);
+    z-index: 0;
+  }
+
+  /* === concept 6 — stacked lockup === */
+  .c6 {
+    line-height: 1;
+    display: inline-flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .c6 .a {
+    font-family: var(--serif-italic);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 28px;
+    color: var(--ink-mute);
+    letter-spacing: 0.02em;
+  }
+  .c6 .b {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 92px;
+    color: var(--ink);
+    letter-spacing: -0.04em;
+  }
+
+  /* === concept 7 — favicon / square mark === */
+  .c7 {
+    display: inline-flex;
+    align-items: center;
+    gap: 18px;
+  }
+  .c7 .mark {
+    width: 80px;
+    height: 80px;
+    border-radius: 18px;
+    background: var(--ink);
+    color: var(--warm-stone);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 38px;
+    letter-spacing: -0.04em;
+    position: relative;
+    overflow: hidden;
+  }
+  .c7 .mark::after {
+    /* tiny "play" tick echoing into the frame */
+    content: '';
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    width: 12px;
+    height: 12px;
+    background:
+      linear-gradient(135deg, transparent 0 50%, var(--echo-blue) 50% 100%);
+    clip-path: polygon(0 0, 100% 50%, 0 100%);
+    opacity: .9;
+  }
+  .c7 .word {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 40px;
+    letter-spacing: -0.025em;
+    color: var(--ink);
+  }
+
+  /* === concept 8 — dark mode primary === */
+  .c8 {
+    font-family: var(--sans);
+    font-size: 80px;
+    letter-spacing: -0.025em;
+    line-height: 1;
+  }
+  .c8 .a { font-weight: 400; color: #f0eee8; }
+  .c8 .b { font-weight: 700; color: #f0eee8; }
+  .c8 .dot {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    background: var(--echo-blue);
+    border-radius: 50%;
+    margin-left: 12px;
+    vertical-align: 0.18em;
+  }
+
+  /* footer */
+  footer {
+    padding: 48px 80px 64px;
+    border-top: 1px solid rgba(0,0,0,.06);
+    background: var(--warm-stone);
+  }
+  footer h2 {
+    margin: 0 0 18px;
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 22px;
+  }
+  footer .availability {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  footer .availability .col h3 {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-mute);
+    margin: 0 0 8px;
+  }
+  footer .availability .col ul {
+    margin: 0;
+    padding-left: 18px;
+    color: var(--ink-soft);
+  }
+  footer .availability .col ul li { margin-bottom: 4px; }
+  footer .availability .ok::before { content: '✓ '; color: #2f8c3a; }
+  footer .availability .no::before { content: '✗ '; color: #b73a3a; }
+  footer .availability .alt::before { content: '○ '; color: var(--ink-mute); }
+
+  @media (max-width: 980px) {
+    .grid { grid-template-columns: 1fr; }
+    header { padding: 40px 32px 24px; }
+    footer { padding: 32px; }
+    .cell { padding: 48px 32px 36px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>EchoFrames · wordmark explorations</h1>
+  <p class="meta">
+    Eight directions for the <b>EchoFrames</b> wordmark, paired with the project's etymology:
+    <em>Echo</em> (faithful replay of the source) + <em>Frames</em> (deterministic per-frame Remotion render).
+    Pick one (or hybrid two) and we'll lock the system around it.
+    Type stack borrows from the Memdex aesthetic — Libre Baskerville (serif), Instrument Serif (italic accent), Inter (sans), JetBrains Mono (technical). Same brand family, different tone.
+  </p>
+</header>
+
+<section class="grid">
+
+  <div class="cell">
+    <div class="label">01 · Sans bicolor (Remotion-style)</div>
+    <div class="c1"><span class="a">Echo</span><span class="b">Frames</span></div>
+    <div class="desc">Cleanest, most direct. Same trick as the Remotion wordmark — weight contrast inside one word does all the work. Safest for HN headline + favicon resizing.</div>
+  </div>
+
+  <div class="cell light">
+    <div class="label">02 · Serif/sans hybrid (Memdex-aligned)</div>
+    <div class="c2"><span class="a">Echo</span><span class="b">Frames</span></div>
+    <div class="desc">"Echo" carries the warmth + reflection metaphor in serif; "Frames" carries the precision in sans. Reads as <i>thoughtful tool</i> not <i>dev library</i>.</div>
+  </div>
+
+  <div class="cell">
+    <div class="label">03 · Italic accent (most "Memdex")</div>
+    <div class="c3"><span class="a">Echo</span><span class="b">Frames</span></div>
+    <div class="desc">Instrument Serif italic for "Echo" — same italic that lives in Memdex's hero. Most premium feel; weakest "developer tool" signal.</div>
+  </div>
+
+  <div class="cell light">
+    <div class="label">04 · Frame ticks (technical signal)</div>
+    <div class="c4"><span>EchoFrames</span><span class="ticks"><span></span><span></span><span></span><span></span></span></div>
+    <div class="desc">Adds a 4-tick film/keyframe glyph that animates in HF Apple-style. Strongest "this is a frame-by-frame thing" signal. Logo can stand alone as just the ticks.</div>
+  </div>
+
+  <div class="cell">
+    <div class="label">05 · Echo ghost (conceptual)</div>
+    <div class="c5"><span class="echo-ghost">Echo</span><span class="echo-ghost">Frames</span></div>
+    <div class="desc">"Echo" stamped 3× with falling opacity behind itself — the wordmark literally echoes. Strongest concept but harder to use small (favicon, OG image).</div>
+  </div>
+
+  <div class="cell light">
+    <div class="label">06 · Stacked lockup</div>
+    <div class="c6"><span class="a">echo</span><span class="b">Frames</span></div>
+    <div class="desc">Tagline-as-mark: "echo" as descriptor for "Frames". Works well for a docs-site nav header. Square-ish proportion = good for sticker / merch.</div>
+  </div>
+
+  <div class="cell">
+    <div class="label">07 · Mark + word (favicon system)</div>
+    <div class="c7"><span class="mark">EF</span><span class="word">EchoFrames</span></div>
+    <div class="desc">"EF" square as the standalone icon (favicon, npm avatar, GitHub org). The tiny play-tick in the corner ties to concept 04. Works at 16×16 and 1024×1024.</div>
+  </div>
+
+  <div class="cell dark">
+    <div class="label">08 · Dark mode primary + dot</div>
+    <div class="c8"><span class="a">Echo</span><span class="b">Frames</span><span class="dot"></span></div>
+    <div class="desc">Dark backgrounds (HN, GitHub README, social cards) often dominate impressions. The single blue dot is the "live / running" signal — same trope as Vercel + Linear.</div>
+  </div>
+
+</section>
+
+<footer>
+  <h2>Name availability snapshot</h2>
+  <div class="availability">
+    <div class="col">
+      <h3>npm</h3>
+      <ul>
+        <li class="ok"><code>echoframes</code></li>
+        <li class="ok"><code>echoframes-capture</code></li>
+        <li class="ok"><code>@echoframes/sdk</code></li>
+        <li class="ok"><code>@echoframes/remotion</code></li>
+      </ul>
+    </div>
+    <div class="col">
+      <h3>GitHub</h3>
+      <ul>
+        <li class="ok"><code>github.com/echoframes</code></li>
+        <li class="ok"><code>github.com/EchoFrames</code></li>
+        <li class="alt">repo: <code>XEasonChan/echoframes</code> (rename)</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h3>Domain</h3>
+      <ul>
+        <li class="no"><code>echoframes.com</code> · since 2017 (MarkMonitor hold)</li>
+        <li class="no"><code>echoframes.io</code> · since 2019 (Com Laude hold)</li>
+        <li class="alt"><code>echoframes.dev</code> · whois silent — register first</li>
+        <li class="alt"><code>useechoframes.com</code> / <code>getechoframes.com</code> · available fallbacks</li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
