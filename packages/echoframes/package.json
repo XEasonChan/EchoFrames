@@ -1,0 +1,17 @@
+{
+  "name": "echoframes",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "description": "EchoFrames SDK (scaffold for Task 1 fixture; full scaffold in Task 2)",
+  "license": "MIT",
+  "scripts": {
+    "build:fixture": "tsx scripts/build-fixture.ts"
+  },
+  "devDependencies": {
+    "tsx": "^4.7.0",
+    "playwright": "^1.45.0",
+    "@playwright/test": "^1.45.0",
+    "typescript": "^5.4.0"
+  }
+}

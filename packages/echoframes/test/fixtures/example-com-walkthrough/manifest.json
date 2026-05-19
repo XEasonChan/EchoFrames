@@ -1,0 +1,32 @@
+{
+  "fixtureId": "example-com-walkthrough",
+  "sourceUrl": "https://example.com",
+  "durationMs": 6500,
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "keyframes": [
+    {
+      "tMs": 0,
+      "file": "keyframes/0000.png",
+      "label": "initial load"
+    },
+    {
+      "tMs": 2000,
+      "file": "keyframes/0001.png",
+      "label": "after scroll"
+    },
+    {
+      "tMs": 4000,
+      "file": "keyframes/0002.png",
+      "label": "link hover"
+    },
+    {
+      "tMs": 6000,
+      "file": "keyframes/0003.png",
+      "label": "link clicked"
+    }
+  ],
+  "events": "capture.rrweb.json"
+}
