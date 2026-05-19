@@ -1,5 +1,5 @@
 import { chromium } from 'playwright';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -8,6 +8,10 @@ const OUT = resolve(HERE, '..', 'test', 'fixtures', 'example-com-walkthrough');
 const RRWEB_BUNDLE = resolve(HERE, '..', '..', 'rrweb', 'dist', 'rrweb.umd.cjs');
 
 async function main(): Promise<void> {
+  if (!existsSync(RRWEB_BUNDLE)) {
+    throw new Error(`rrweb umd bundle not found at ${RRWEB_BUNDLE}\nRun: yarn workspace rrweb build`);
+  }
+
   mkdirSync(resolve(OUT, 'keyframes'), { recursive: true });
   const browser = await chromium.launch();
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
@@ -19,6 +23,10 @@ async function main(): Promise<void> {
   // Use checkoutEveryNth:2 so periodic full snapshots are emitted, boosting event count.
   // sampling.mousemove:20 emits a mouse-position batch every 20 ms of movement.
   await page.addScriptTag({ path: RRWEB_BUNDLE });
+
+  // page.evaluate calls below use string form rather than typed arrow functions.
+  // tsx's esbuild compilation injects a `__name` helper into serialized functions
+  // which breaks in the browser context. String form sidesteps the helper.
   await page.evaluate(`
     window.__ef_events = [];
     window.rrweb.record({
@@ -37,8 +45,19 @@ async function main(): Promise<void> {
   await page.waitForTimeout(100);
   await page.mouse.move(400, 300);
   await page.waitForTimeout(100);
+  // Make the page tall enough to scroll (example.com fits in 720px with no overflow),
+  // then use page.mouse.wheel (Node-side) so a real wheel event fires and rrweb captures
+  // a scroll event (source=3). window.scrollBy inside page.evaluate does NOT fire the
+  // scroll event rrweb listens to.
   await page.evaluate(`
-    window.scrollBy(0, 200);
+    var spacer = document.createElement('div');
+    spacer.id = 'ef-scroll-spacer';
+    spacer.style.cssText = 'height:1000px';
+    document.body.appendChild(spacer);
+  `);
+  await page.mouse.wheel(0, 200);
+  await page.waitForTimeout(200);
+  await page.evaluate(`
     var banner = document.createElement('div');
     banner.id = 'ef-marker-scroll';
     banner.style.cssText = 'position:fixed;top:0;left:0;right:0;height:40px;background:#fde047;z-index:99999;color:#000;font:bold 18px/40px sans-serif;text-align:center';
@@ -82,6 +101,11 @@ async function main(): Promise<void> {
   await browser.close();
 
   writeFileSync(resolve(OUT, 'capture.rrweb.json'), JSON.stringify(events));
+
+  if (events.length < 10) {
+    throw new Error(`fixture has only ${events.length} events; expected >= 10 (rrweb injection likely failed silently)`);
+  }
+
   writeFileSync(
     resolve(OUT, 'manifest.json'),
     JSON.stringify(
@@ -90,6 +114,8 @@ async function main(): Promise<void> {
         sourceUrl: 'https://example.com',
         durationMs: 6500,
         viewport: { width: 1280, height: 720 },
+        // Nominal timeline labels. Not derived from rrweb event.timestamp;
+        // downstream consumers should index keyframes by file name, not by tMs.
         keyframes: [
           { tMs: 0, file: 'keyframes/0000.png', label: 'initial load' },
           { tMs: 2000, file: 'keyframes/0001.png', label: 'scroll banner' },
@@ -100,7 +126,7 @@ async function main(): Promise<void> {
       },
       null,
       2,
-    ),
+    ) + '\n',
   );
   console.log(`fixture written: ${events.length} events`);
 }
