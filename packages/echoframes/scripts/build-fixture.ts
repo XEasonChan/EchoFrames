@@ -28,50 +28,55 @@ async function main(): Promise<void> {
     });
   `);
 
-  // t=0: initial load screenshot
+  // t=0: initial state — no modifications
   await page.screenshot({ path: resolve(OUT, 'keyframes', '0000.png'), fullPage: false });
 
-  // t≈0–2000: mouse movements across the page
+  // t≈2000: scroll banner — inject visible yellow banner + scroll so pixels change
   await page.waitForTimeout(50);
   await page.mouse.move(200, 300);
   await page.waitForTimeout(100);
   await page.mouse.move(400, 300);
   await page.waitForTimeout(100);
-  await page.mouse.move(600, 300);
+  await page.evaluate(`
+    window.scrollBy(0, 200);
+    var banner = document.createElement('div');
+    banner.id = 'ef-marker-scroll';
+    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;height:40px;background:#fde047;z-index:99999;color:#000;font:bold 18px/40px sans-serif;text-align:center';
+    banner.textContent = 'scrolled';
+    document.body.appendChild(banner);
+  `);
   await page.waitForTimeout(100);
-  await page.mouse.move(400, 200);
-  await page.waitForTimeout(1550);
-
-  // t≈2000: after mouse movement
-  await page.evaluate('window.scrollBy(0, 100)');
   await page.screenshot({ path: resolve(OUT, 'keyframes', '0001.png'), fullPage: false });
 
-  // t≈2000–4000: focus interactions
+  // t≈4000: link outlined — remove banner, add red outline to first <a>
   await page.waitForTimeout(200);
-  await page.focus('a');
-  await page.waitForTimeout(200);
-  await page.keyboard.press('Tab');
+  await page.evaluate(`
+    var b = document.getElementById('ef-marker-scroll');
+    if (b) b.remove();
+    var a = document.querySelector('a');
+    if (a) { a.style.outline = '4px solid #ef4444'; a.style.outlineOffset = '2px'; }
+  `);
+  await page.waitForTimeout(100);
+  await page.screenshot({ path: resolve(OUT, 'keyframes', '0002.png'), fullPage: false });
+
+  // t≈4000–6000: more mouse movement before final state
   await page.waitForTimeout(200);
   await page.mouse.move(300, 400);
   await page.waitForTimeout(100);
   await page.mouse.move(500, 400);
-  await page.waitForTimeout(1100);
+  await page.waitForTimeout(1000);
 
-  // t≈4000: link hover screenshot
-  await page.hover('a');
-  await page.screenshot({ path: resolve(OUT, 'keyframes', '0002.png'), fullPage: false });
-
-  // t≈4000–6000: scroll back, more mouse movement
-  await page.waitForTimeout(200);
-  await page.evaluate('window.scrollBy(0, -50)');
-  await page.waitForTimeout(1700);
-
-  // Collect events BEFORE clicking (clicking navigates away, wiping the window context)
+  // Collect events BEFORE mutating the DOM for the final keyframe
   const events = await page.evaluate('window.__ef_events') as unknown[];
 
-  // t≈6000: link clicked screenshot (page may navigate)
-  await page.click('a', { noWaitAfter: true }).catch(() => undefined);
-  await page.waitForTimeout(200);
+  // t≈6000: navigated — simulate post-navigation state by replacing body innerHTML
+  // (avoids navigation race condition; keeps the test offline-safe)
+  await page.evaluate(`
+    var a = document.querySelector('a');
+    if (a) { a.style.outline = ''; a.style.outlineOffset = ''; }
+    document.body.innerHTML = '<h1>navigated</h1>';
+  `);
+  await page.waitForTimeout(100);
   await page.screenshot({ path: resolve(OUT, 'keyframes', '0003.png'), fullPage: false });
 
   await browser.close();
@@ -87,9 +92,9 @@ async function main(): Promise<void> {
         viewport: { width: 1280, height: 720 },
         keyframes: [
           { tMs: 0, file: 'keyframes/0000.png', label: 'initial load' },
-          { tMs: 2000, file: 'keyframes/0001.png', label: 'after scroll' },
-          { tMs: 4000, file: 'keyframes/0002.png', label: 'link hover' },
-          { tMs: 6000, file: 'keyframes/0003.png', label: 'link clicked' },
+          { tMs: 2000, file: 'keyframes/0001.png', label: 'scroll banner' },
+          { tMs: 4000, file: 'keyframes/0002.png', label: 'link outlined' },
+          { tMs: 6000, file: 'keyframes/0003.png', label: 'navigated' },
         ],
         events: 'capture.rrweb.json',
       },

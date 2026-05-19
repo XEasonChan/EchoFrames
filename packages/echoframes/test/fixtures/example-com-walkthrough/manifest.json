@@ -15,17 +15,17 @@
     {
       "tMs": 2000,
       "file": "keyframes/0001.png",
-      "label": "after scroll"
+      "label": "scroll banner"
     },
     {
       "tMs": 4000,
       "file": "keyframes/0002.png",
-      "label": "link hover"
+      "label": "link outlined"
     },
     {
       "tMs": 6000,
       "file": "keyframes/0003.png",
-      "label": "link clicked"
+      "label": "navigated"
     }
   ],
   "events": "capture.rrweb.json"
